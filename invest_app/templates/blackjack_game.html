@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.table-bg {
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #0b2b1f, #000);
+    color: white;
+}
+
+.chip {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: black;
+    color: white;
+    font-weight: bold;
+    transition: transform .15s;
+}
+.chip:hover { transform: scale(1.15); border-color: #0f0; }
+
+.card-img { width: 80px; animation: deal .4s ease-out; }
+@keyframes deal { from { transform: translateY(-20px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+
+.dealer-box img { filter: grayscale(100%) contrast(1.2); }
+
+.game-message { margin-top:20px; text-align:center; font-weight:bold; }
+</style>
+
+<div class="container-fluid table-bg px-4 py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-uppercase">Blackjack</h3>
+        <a href="{% url 'core:home' %}" class="btn btn-outline-white btn-sm">← Lobby</a>
+    </div>
+
+    <!-- SALDO -->
+    <div class="mb-4 text-center">
+        <span class="badge bg-dark border border-secondary rounded-0 px-3 py-2">
+            SALDO: <strong>€{{ profile.balance }}</strong>
+        </span>
+    </div>
+
+    <!-- DEALER -->
+    <div class="dealer-box text-center mb-4">
+        <img src="https://i.imgur.com/6ZQZQZC.png" width="160">
+        <p id="dealer-text" class="text-secondary mt-3 small">Bem-vindo à mesa.</p>
+    </div>
+
+    <!-- CARTAS DO DEALER -->
+    <div class="text-center mb-4">
+        {% for card in dealer_cards %}
+            <img src="{{ card.image }}" class="card-img">
+        {% endfor %}
+    </div>
+
+    <!-- CARTAS DO JOGADOR -->
+    <div class="text-center mb-4">
+        {% for card in player_cards %}
+            <img src="{{ card.image }}" class="card-img">
+        {% endfor %}
+    </div>
+
+    <!-- FORMULÁRIO DE APOSTA -->
+    <div class="text-center mb-3">
+        <form method="post" class="d-inline-block">
+            {% csrf_token %}
+            {{ form.bet_amount.label_tag }}
+            {{ form.bet_amount }}
+            <button type="submit" class="btn btn-success mt-2">Apostar e Distribuir</button>
+        </form>
+    </div>
+
+    <!-- MENSAGEM -->
+    {% if message %}
+        <div class="alert alert-info game-message">{{ message }}</div>
+    {% endif %}
+
+    <!-- FICHAS VISUAIS -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <button class="chip" data-value="10">10</button>
+        <button class="chip" data-value="50">50</button>
+        <button class="chip" data-value="100">100</button>
+        <button class="chip" data-value="500">500</button>
+    </div>
+
+</div>
+
+<script>
+let betField = document.querySelector('[name="bet_amount"]');
+document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+        let current = parseInt(betField.value || 0);
+        betField.value = current + parseInt(chip.dataset.value);
+    });
+});
+
+// Dealer fake animado
+const dealerText = document.getElementById("dealer-text");
+setTimeout(() => dealerText.innerText = "Faça sua aposta...", 1000);
+setTimeout(() => dealerText.innerText = "Distribuindo cartas...", 2500);
+setTimeout(() => dealerText.innerText = "Boa sorte!", 4000);
+</script>
+
+{% endblock %}

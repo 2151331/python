@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold mb-1 text-uppercase">Dashboard</h2>
+            <p class="text-secondary small m-0">
+                Bem-vindo, {{ request.user.username|upper }}
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <span class="badge bg-dark border border-secondary rounded-0 px-3 py-2">
+                SALDO: <strong>10.000,00 €</strong>
+            </span>
+            <a href="{% url 'admin:logout' %}"
+               class="btn btn-outline-white btn-sm px-3">
+                SAIR
+            </a>
+        </div>
+    </div>
+
+    <!-- GRID DE JOGOS -->
+    <div class="row g-4">
+
+        <!-- SLOTS -->
+        <div class="col-md-4">
+            <div class="card bg-black border-secondary h-100">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <i class="bi bi-controller fs-1"></i>
+                        <span class="badge bg-danger rounded-0">ALTO RISCO</span>
+                    </div>
+
+                    <h4 class="fw-bold">SLOTS</h4>
+                    <p class="text-secondary small">
+                        Máquina de slots de alta volatilidade.
+                        Perdas rápidas ou ganhos explosivos.
+                    </p>
+
+                    <div class="mt-auto">
+                        <a href="{% url 'core:slots' %}"
+                           class="btn btn-danger w-100 py-2">
+                            GIRAR ROLOS
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLACKJACK -->
+        <div class="col-md-4">
+            <div class="card bg-black border-secondary h-100">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <i class="bi bi-suit-spade-fill fs-1"></i>
+                        <span class="badge bg-warning text-dark rounded-0">
+                            MÉDIO RISCO
+                        </span>
+                    </div>
+
+                    <h4 class="fw-bold">BLACKJACK</h4>
+                    <p class="text-secondary small">
+                        Jogo estratégico contra o dealer.
+                        Decisões importam.
+                    </p>
+
+                    <div class="mt-auto">
+                        <a href="{% url 'core:blackjack_game' %}"
+                           class="btn btn-warning text-dark w-100 py-2">
+                            ENTRAR NO LOBBY
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card bg-black border-secondary h-100 position-relative overflow-hidden">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <i class="bi bi-graph-up-arrow fs-1 mb-3"></i>
+                        <span class="badge bg-warning text-dark rounded-0">INVEST</span>
+                    </div>
+                    <h4 class="fw-bold">MERCADO</h4>
+                    <p class="text-secondary small">
+                        Compra ativos, acompanha preços e vende no momento certo.
+                    </p>
+                    <div class="mt-auto">
+                        <a href="{% url 'core:market' %}" class="btn btn-warning w-100 py-2">
+                            ENTRAR NO MERCADO
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EM BREVE -->
+        <div class="col-md-4">
+            <div class="card bg-black border-secondary h-100 opacity-75">
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-graph-up-arrow fs-1"></i>
+                    </div>
+
+                    <h4 class="fw-bold">INVESTIMENTOS</h4>
+                    <p class="text-secondary small">
+                        Trading, ETFs e simulações financeiras.
+                    </p>
+
+                    <div class="mt-auto">
+                        <button class="btn btn-outline-white w-100 py-2" disabled>
+                            EM BREVE
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="text-center mt-5">
+        <p class="text-secondary small">
+            INVEST_APP © {{ now|date:"Y" }} · Simulação educacional
+        </p>
+    </div>
+
+</div>
+{% endblock %}

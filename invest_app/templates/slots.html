@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container text-center mt-5">
+    <h2>Slots Disponíveis</h2>
+    <div class="row g-4 mt-4">
+        {% for slot in slots_list %}
+        <div class="col-md-4">
+            <div class="slot-card" onclick="window.open('{{ slot.url }}','_blank')">
+                <img src="{{ slot.img }}" alt="{{ slot.title }}">
+                <div class="slot-card-title">{{ slot.title }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
