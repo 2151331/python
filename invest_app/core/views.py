@@ -3,9 +3,13 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 
+
+# ------------------- DASHBOARD/HOME ---------------------------
 def home(request):
     return render(request, 'home.html')
 
+
+# ------------------- LOGIN ---------------------------
 def login_view(request):
     if request.method == "POST":
         user = authenticate(
@@ -20,6 +24,8 @@ def login_view(request):
         else:
             messages.error(request, "Credenciais inválidas")
     return render(request, 'login.html')
+
+# ------------------- REGISTRO ---------------------------
 
 def register(request):
     form = UserCreationForm(request.POST or None)
@@ -41,6 +47,9 @@ from .models import Profile
 from .forms import BetForm
 import requests
 
+
+# ------------------- SLOTS ---------------------------
+
 @login_required
 def slots(request):
     slots_list = [
@@ -50,14 +59,14 @@ def slots(request):
             "url": "https://demogamesfree.pragmaticplay.net/gs2c/html5Game.do?extGame=1&symbol=vs20fruitswx&gname=Sweet%20Bonanza%201000&jurisdictionID=99&mgckey=stylename@generic~SESSION@ea979611-4a0b-4587-a0e5-0222c3ee266b"
         },
         {
-            "title": "Hot Fruits",
-            "img": "https://www.pragmaticplay.com/wp-content/uploads/2020/12/Hot-Fruits-800x600.jpg",
-            "url": "https://demogamesfree.pragmaticplay.net/gs2c/html5Game.do?extGame=1&symbol=vs20hotfruitswx&gname=Hot%20Fruits%201000&jurisdictionID=99&mgckey=stylename@generic~SESSION@ea979611-4a0b-4587-a0e5-0222c3ee266b"
+            "title": "Wheel of Happiness",
+            "img": "https://www.pragmaticplay.com/wp-content/uploads/2025/12/Wheel-of-Happiness_339x180_EN.png",
+            "url": "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=vswayswildeq&websiteUrl=https%3A%2F%2Fdemogamesfree.pragmaticplay.net&jurisdiction=99&lobby_url=https%3A%2F%2Fwww.pragmaticplay.com%2Fen%2F&lang=en&cur=USD&lang=EN&cur=USD"
         },
         {
-            "title": "Fruit Deluxe",
-            "img": "https://www.pragmaticplay.com/wp-content/uploads/2020/08/Fruit-Deluxe-800x600.jpg",
-            "url": "https://demogamesfree.pragmaticplay.net/gs2c/html5Game.do?extGame=1&symbol=vs20fruitsdeluxe&gname=Fruit%20Deluxe%201000&jurisdictionID=99&mgckey=stylename@generic~SESSION@ea979611-4a0b-4587-a0e5-0222c3ee266b"
+            "title": "Fortune Of Olympus",
+            "img": "https://www.pragmaticplay.com/wp-content/uploads/2025/11/Fortune-of-Olympus_339x180_EN.png",
+            "url": "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=vs20olympgcl&websiteUrl=https%3A%2F%2Fdemogamesfree.pragmaticplay.net&jurisdiction=99&lobby_url=https%3A%2F%2Fwww.pragmaticplay.com%2Fen%2F&lang=en&cur=USD&lang=EN&cur=USD"
         }
     ]
 
@@ -71,6 +80,9 @@ from django.contrib.auth.decorators import login_required
 from .models import Profile
 from .forms import BetForm
 import requests
+
+
+# ------------------- BLACKJACK ---------------------------
 
 @login_required
 def blackjack_game(request):
@@ -158,6 +170,8 @@ def blackjack_game(request):
     })
 
 
+# ------------------- MARCADO/INVESTIMENTOS ---------------------------
+
 import random
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
@@ -167,7 +181,7 @@ from .models import Profile
 def market(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # Ativos fake
+    # Empresas fakes
     assets = [
         {"name": "TechCorp", "price": random.randint(80, 140)},
         {"name": "GreenEnergy", "price": random.randint(40, 90)},

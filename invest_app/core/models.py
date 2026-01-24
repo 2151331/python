@@ -9,15 +9,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - €{self.balance}"
-
-# Criar Profile automaticamente ao criar usuário
+        
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-
-
-
 
 from django.db import models
 from django.contrib.auth.models import User
