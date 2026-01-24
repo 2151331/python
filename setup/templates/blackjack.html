@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid vh-100 bg-black d-flex flex-column p-0">
+    <nav class="border-bottom border-secondary py-3 px-5 d-flex justify-content-between align-items-center">
+        <span class="fw-bold tracking-widest text-uppercase text-white">[ MÓDULO_BLACKJACK_V1 ]</span>
+        <div class="small">
+            <span class="text-secondary me-4">DISPONÍVEL: <b class="text-white">{{ profile.balance }} €</b></span>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-light btn-sm px-3">VOLTAR</a>
+        </div>
+    </nav>
+
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="w-100" style="max-width: 900px;">
+            
+            {% if not game_active %}
+                <div class="text-center">
+                    <h1 class="display-1 fw-bold text-uppercase mb-4 text-white" style="letter-spacing: -5px;">Blackjack</h1>
+                    <div class="card bg-black border-secondary p-5 mx-auto" style="max-width: 400px;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <label class="small text-secondary text-uppercase mb-3 d-block">Ordem de Aposta (€)</label>
+                            <input type="number" name="bet" min="10" max="1000" step="10" 
+                                   class="form-control form-control-lg text-center fw-bold mb-4 py-3" value="100">
+                            <button type="submit" name="place_bet" class="btn btn-light btn-lg w-100 py-3 fw-bold text-uppercase">Iniciar Partida</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row g-5 text-center">
+                    
+                    <div class="col-12 mb-4">
+                        <p class="text-secondary small text-uppercase tracking-widest mb-3">Dealer (Banca)</p>
+                        <div class="d-flex justify-content-center gap-3 mb-3">
+                            {% for card in dealer_hand %}
+                                <div class="border border-secondary p-3 bg-dark d-flex align-items-center justify-content-center fw-bold text-white" 
+                                     style="width: 75px; height: 105px; font-size: 1.1rem;">
+                                    {{ card }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <span class="badge border border-secondary text-secondary">PONTOS: {{ d_score }}</span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="mb-5">
+                            <p class="text-uppercase small mb-3">Suas Cartas</p>
+                            <div class="d-flex justify-content-center gap-3">
+                                {% for card in player_hand %}
+                                    <div class="border border-white p-3 bg-white text-black d-flex align-items-center justify-content-center fw-bold shadow-lg" 
+                                         style="width: 85px; height: 120px; font-size: 1.4rem;">
+                                        {{ card }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <h2 class="mt-4 fw-bold">TOTAL 4: {{ p_score }}</h2>
+                        </div>
+
+                        <div class="card bg-black border-secondary p-4 mx-auto" style="max-width: 400px;">
+                            <div class="d-flex justify-content-between mb-3 small">
+                                <span class="text-secondary">APOSTA:</span>
+                                <span class="text-white">{{ bet }} €</span>
+                            </div>
+                            <form method="post" class="d-flex gap-2">
+                                {% csrf_token %}
+                                <button type="submit" name="hit" class="btn btn-outline-light w-100 py-3 fw-bold">HIT (PEDIR)</button>
+                                <button type="submit" name="stand" class="btn btn-light w-100 py-3 fw-bold">STAND (PARAR)</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <footer class="p-3 px-5 border-top border-secondary text-secondary small d-flex justify-content-between">
+        <span id="status">SISTEMA ATIVO</span>
+        <span>MODO: FULL_SCREEN_DARK</span>
+    </footer>
+</div>
+{% endblock %}
