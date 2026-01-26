@@ -5,8 +5,12 @@ from django.contrib import messages
 
 
 # ------------------- DASHBOARD/HOME ---------------------------
+
 def home(request):
-    return render(request, 'home.html')
+    profile = request.user.profile
+    return render(request, 'home.html', {
+        'profile': profile
+    })
 
 
 # ------------------- LOGIN ---------------------------
@@ -21,18 +25,20 @@ def login_view(request):
             login(request, user)
             messages.success(request, "Login efetuado com sucesso")
             return redirect('core:home')
+            #tem que ser core:home pq está defenido nas urls como app_name=core 
         else:
             messages.error(request, "Credenciais inválidas")
     return render(request, 'login.html')
 
-# ------------------- REGISTRO ---------------------------
+# ------------------- REGISTO ---------------------------
 
 def register(request):
     form = UserCreationForm(request.POST or None)
     if form.is_valid():
         form.save()
         messages.success(request, "Conta criada com sucesso")
-        return redirect('core:login') 
+        return redirect('core:login')
+        #ao fazer o registo, redireciona para a página de login e guarda na base de dados.
     return render(request, 'register.html', {'form': form})
 
 from django.shortcuts import render, redirect
@@ -54,9 +60,9 @@ import requests
 def slots(request):
     slots_list = [
         {
-            "title": "Sweet Bonanza",
-            "img": "https://www.pragmaticplay.com/wp-content/uploads/2021/05/SweetBonanza-800x600.jpg",
-            "url": "https://demogamesfree.pragmaticplay.net/gs2c/html5Game.do?extGame=1&symbol=vs20fruitswx&gname=Sweet%20Bonanza%201000&jurisdictionID=99&mgckey=stylename@generic~SESSION@ea979611-4a0b-4587-a0e5-0222c3ee266b"
+            "title": "Sweet Bonanza 1000",
+            "img": "https://www.pragmaticplay.com/wp-content/uploads/2024/05/Sweet-Bonanza-1000_339x180.png",
+            "url": "https://demogamesfree.pragmaticplay.net/gs2c/openGame.do?gameSymbol=vs20fruitswx&websiteUrl=https%3A%2F%2Fdemogamesfree.pragmaticplay.net&jurisdiction=99&lobby_url=https%3A%2F%2Fwww.pragmaticplay.com%2Fen%2F&lang=en&cur=USD&lang=EN&cur=USD"
         },
         {
             "title": "Wheel of Happiness",
@@ -170,7 +176,7 @@ def blackjack_game(request):
     })
 
 
-# ------------------- MARCADO/INVESTIMENTOS ---------------------------
+# ------------------- MERCADO/INVESTIMENTOS ---------------------------
 
 import random
 from django.contrib.auth.decorators import login_required
@@ -183,10 +189,10 @@ def market(request):
 
     # Empresas fakes
     assets = [
-        {"name": "TechCorp", "price": random.randint(80, 140)},
-        {"name": "GreenEnergy", "price": random.randint(40, 90)},
-        {"name": "CryptoX", "price": random.randint(10, 60)},
-        {"name": "AI Industries", "price": random.randint(120, 200)},
+        {"name": "Tesla", "price": random.randint(80, 140)},
+        {"name": "NVIDIA", "price": random.randint(40, 90)},
+        {"name": "Auchan", "price": random.randint(10, 60)},
+        {"name": "Mercadona", "price": random.randint(120, 200)},
     ]
 
     return render(request, "market.html", {
@@ -236,7 +242,7 @@ def market(request):
             if total_price > profile.balance:
                 return redirect("core:market")
 
-            profile.balance -= total_price
+            profile.balance = profile.balance - total_price
             profile.save()
 
             portfolio.avg_price = (

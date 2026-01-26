@@ -14,7 +14,7 @@
 
         <div class="d-flex gap-2">
             <span class="badge bg-dark border border-secondary rounded-0 px-3 py-2">
-                SALDO: <strong>10.000,00 €</strong>
+                SALDO: <strong>€{{ profile.balance }}</strong>
             </span>
             <a href="{% url 'admin:logout' %}"
                class="btn btn-outline-white btn-sm px-3">
