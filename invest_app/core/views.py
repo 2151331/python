@@ -176,113 +176,104 @@ def blackjack_game(request):
     })
 
 
-# ------------------- MERCADO/INVESTIMENTOS ---------------------------
+# ------------------- AÇÕES/INVESTIMENTOS ---------------------------
 
-import random
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-from .models import Profile
+from django.contrib import messages
+from django.db import transaction
+from decimal import Decimal
+import json
 
 @login_required
 def market(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
-
-    # Empresas fakes
-    assets = [
-        {"name": "Tesla", "price": random.randint(80, 140)},
-        {"name": "NVIDIA", "price": random.randint(40, 90)},
-        {"name": "Auchan", "price": random.randint(10, 60)},
-        {"name": "Mercadona", "price": random.randint(120, 200)},
-    ]
-
-    return render(request, "market.html", {
-        "profile": profile,
-        "assets": assets
-    })
-
-
-import random
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Asset, Portfolio, Transaction, Profile
-
-@login_required
-def market(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    """Lista ativos e processa a compra com proteção de transação."""
+    from .models import Asset, Profile, Portfolio, Transaction
 
     assets = Asset.objects.all()
-
-    # EVENTO ALEATÓRIO
-    event = random.choice([None, None, "CRASH", "PUMP"])
-
-    for asset in assets:
-        variation = random.uniform(-5, 5)
-
-        if event == "CRASH":
-            variation -= random.uniform(5, 15)
-        elif event == "PUMP":
-            variation += random.uniform(5, 15)
-
-        asset.price = max(1, round(asset.price + variation, 2))
-        asset.save()
+    # Garante que o profile existe
+    user_profile, _ = Profile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
-        asset_id = request.POST["asset_id"]
-        action = request.POST["action"]
-        quantity = int(request.POST["quantity"])
+        asset_id = request.POST.get('asset_id')
+        qty_str = request.POST.get('quantity', '0')
 
-        asset = Asset.objects.get(id=asset_id)
-        total_price = asset.price * quantity
+        if not qty_str.isdigit() or int(qty_str) <= 0:
+            messages.error(request, "QUANTIDADE INVÁLIDA")
+            return redirect('market')
 
-        portfolio, _ = Portfolio.objects.get_or_create(
-            user=request.user, asset=asset
-        )
+        quantity = int(qty_str)
+        asset = get_object_or_404(Asset, id=asset_id)
+        
+        # Conversão para Decimal para evitar erro: Decimal - Float
+        total_cost = Decimal(str(asset.price)) * quantity
 
-        if action == "buy":
-            if total_price > profile.balance:
-                return redirect("core:market")
+        with transaction.atomic():
+            # select_for_update bloqueia a linha no banco para evitar gastos duplos
+            profile = Profile.objects.select_for_update().get(user=request.user)
 
-            profile.balance = profile.balance - total_price
-            profile.save()
+            if profile.balance >= total_cost:
+                # 1. Deduzir Saldo
+                profile.balance -= total_cost
+                profile.save()
 
-            portfolio.avg_price = (
-                (portfolio.avg_price * portfolio.quantity + total_price)
-                / (portfolio.quantity + quantity)
-            )
-            portfolio.quantity += quantity
-            portfolio.save()
+                # 2. Registrar Histórico
+                Transaction.objects.create(
+                    user=request.user, asset=asset, quantity=quantity,
+                    price=asset.price, type='BUY'
+                )
 
-            Transaction.objects.create(
-                user=request.user, asset=asset,
-                quantity=quantity, price=asset.price, type="BUY"
-            )
+                # 3. Atualizar Portfolio
+                port, created = Portfolio.objects.get_or_create(user=request.user, asset=asset)
+                
+                # Cálculo de Preço Médio (PM)
+                total_invested = (port.quantity * port.avg_price) + (quantity * asset.price)
+                new_total_qty = port.quantity + quantity
+                
+                port.avg_price = total_invested / new_total_qty
+                port.quantity = new_total_qty
+                port.save()
 
-        elif action == "sell":
-            if quantity > portfolio.quantity:
-                return redirect("core:market")
+                messages.success(request, f"SUCESSO: {quantity}x {asset.name} COMPRADAS")
+            else:
+                messages.error(request, "SALDO INSUFICIENTE NO TERMINAL")
+        
+        return redirect('market')
 
-            portfolio.quantity -= quantity
-            profile.balance += total_price
+    # Dados para o gráfico do Chart.js
+    chart_labels = [a.name for a in assets]
+    chart_data = [a.price for a in assets]
 
-            if portfolio.quantity == 0:
-                portfolio.avg_price = 0
-
-            portfolio.save()
-            profile.save()
-
-            Transaction.objects.create(
-                user=request.user, asset=asset,
-                quantity=quantity, price=asset.price, type="SELL"
-            )
-
-    portfolio = Portfolio.objects.filter(user=request.user)
-    history = Transaction.objects.filter(user=request.user).order_by("-created_at")[:10]
-
-    return render(request, "market.html", {
-        "assets": assets,
-        "portfolio": portfolio,
-        "history": history,
-        "balance": profile.balance,
-        "event": event
+    return render(request, 'market.html', {
+        'assets': assets,
+        'balance': user_profile.balance,
+        'chart_labels': json.dumps(chart_labels),
+        'chart_data': json.dumps(chart_data),
     })
 
+@login_required
+def portfolio_view(request):
+    """Exibe a composição da carteira e gráfico de pizza."""
+    from .models import Portfolio, Profile
+
+    user_assets = Portfolio.objects.filter(user=request.user, quantity__gt=0)
+    user_profile = request.user.profile
+
+    labels = []
+    values = []
+    total_equity = 0
+
+    for item in user_assets:
+        # Valor atual baseado no preço de mercado do ativo
+        current_val = item.quantity * item.asset.price
+        labels.append(item.asset.name)
+        values.append(current_val)
+        total_equity += current_val
+
+    return render(request, 'portfolio.html', {
+        'portfolio': user_assets,
+        'balance': user_profile.balance,
+        'total_equity': total_equity,
+        'chart_labels': json.dumps(labels),
+        'chart_data': json.dumps(values),
+    })

@@ -1,64 +1,92 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
+<div class="container-fluid px-4 py-5">
+    <div class="row mb-4 border-bottom border-secondary pb-3">
+        <div class="col-md-8">
+            <h1 class="h5 font-monospace m-0 text-uppercase">
+                <i class="bi bi-cpu"></i> TERMINAL_MARKET // v2.0
+            </h1>
+            <p class="text-secondary small m-0">STATUS: ONLINE | SYNC: ACTIVE</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="bg-dark p-2 border border-secondary d-inline-block">
+                <span class="text-secondary small font-monospace">SALDO:</span>
+                <span class="text-white fw-bold">€ {{ balance }}</span>
+            </div>
+        </div>
+    </div>
 
-<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card bg-black border-secondary h-100">
+                <div class="card-header border-secondary bg-black py-3">
+                    <h6 class="m-0 font-monospace text-uppercase">ANÁLISE_DE_PREÇOS</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="marketChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
 
-<h2 class="fw-bold mb-3">📈 Mercado</h2>
-<p>Saldo: <strong>€{{ balance }}</strong></p>
-
-{% if event %}
-<div class="alert alert-danger">
-    ⚠ EVENTO DE MERCADO: {{ event }}
-</div>
-{% endif %}
-
-<hr>
-
-<h4>Ativos</h4>
-<div class="row g-3">
-{% for asset in assets %}
-<div class="col-md-3">
-    <div class="card bg-black border-secondary">
-        <div class="card-body">
-            <h5>{{ asset.name }}</h5>
-            <p>Preço: €{{ asset.price }}</p>
-
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="asset_id" value="{{ asset.id }}">
-                <input type="number" name="quantity" class="form-control mb-2" value="1" min="1">
-
-                <button name="action" value="buy" class="btn btn-success w-100 mb-1">Comprar</button>
-                <button name="action" value="sell" class="btn btn-danger w-100">Vender</button>
-            </form>
+        <div class="col-lg-4">
+            <div class="card bg-black border-secondary shadow-sm">
+                <div class="card-header border-secondary bg-black py-3">
+                    <h6 class="m-0 font-monospace text-uppercase text-white">ORDENS_DE_COMPRA</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush bg-black">
+                        {% for asset in assets %}
+                        <div class="list-group-item bg-black border-secondary p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="text-white fw-bold d-block">{{ asset.name }}</span>
+                                    <span class="text-secondary small">PREÇO: € {{ asset.price }}</span>
+                                </div>
+                                <i class="bi bi-graph-up-arrow text-success"></i>
+                            </div>
+                            
+                            <form method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" name="asset_id" value="{{ asset.id }}">
+                                <div class="input-group input-group-sm">
+                                    <input type="number" name="quantity" class="form-control" value="1" min="1">
+                                    <button class="btn btn-white px-3" type="submit">BUY</button>
+                                </div>
+                            </form>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-{% endfor %}
-</div>
 
-<hr>
-
-<h4>📦 Portfólio</h4>
-<ul>
-{% for p in portfolio %}
-    <li>{{ p.asset.name }} — {{ p.quantity }} @ €{{ p.avg_price }}</li>
-{% empty %}
-    <li>Sem investimentos</li>
-{% endfor %}
-</ul>
-
-<hr>
-
-<h4>🕒 Histórico</h4>
-<ul class="small">
-{% for h in history %}
-    <li>{{ h.created_at|date:"H:i:s" }} - {{ h.type }} {{ h.quantity }} {{ h.asset.name }} @ €{{ h.price }}</li>
-{% endfor %}
-</ul>
-
-<a href="" class="btn btn-outline-white btn-sm mt-3">Atualizar Mercado</a>
-
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('marketChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Preço (EUR)',
+                data: {{ chart_data|safe }},
+                backgroundColor: '#ffffff',
+                borderColor: '#ffffff',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { grid: { color: '#222' }, ticks: { color: '#888' } },
+                x: { grid: { display: false }, ticks: { color: '#fff' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
 {% endblock %}

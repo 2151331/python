@@ -10,7 +10,7 @@ class Profile(models.Model):
 
 class Asset(models.Model):
     name = models.CharField(max_length=50)
-    price = models.FloatField(default=100)
+    price = models.FloatField(default=100.0)
 
     def __str__(self):
         return self.name
@@ -19,12 +19,16 @@ class Portfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
-    avg_price = models.FloatField(default=0)
+    avg_price = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.asset.name}"
 
 class Transaction(models.Model):
+    TYPE_CHOICES = [('BUY', 'BUY'), ('SELL', 'SELL')]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     quantity = models.IntegerField()
     price = models.FloatField()
-    type = models.CharField(max_length=4, choices=[('BUY','BUY'),('SELL','SELL')])
+    type = models.CharField(max_length=4, choices=TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
