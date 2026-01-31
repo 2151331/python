@@ -9,6 +9,6 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('slots/', views.slots, name='slots'),
     path('blackjack/game/', views.blackjack_game, name='blackjack_game'),
-    path('market/', views.market, name='market'),
+    path('market/', views.market, name='market_cenas'),
     path('portfolio/', views.portfolio_view, name='portfolio'),
 ]

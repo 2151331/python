@@ -200,7 +200,7 @@ def market(request):
 
         if not qty_str.isdigit() or int(qty_str) <= 0:
             messages.error(request, "QUANTIDADE INVÁLIDA")
-            return redirect('market')
+            return redirect('core:market_cenas')
 
         quantity = int(qty_str)
         asset = get_object_or_404(Asset, id=asset_id)
@@ -238,7 +238,7 @@ def market(request):
             else:
                 messages.error(request, "SALDO INSUFICIENTE NO TERMINAL")
         
-        return redirect('market')
+        return redirect('core:market_cenas')
 
     # Dados para o gráfico do Chart.js
     chart_labels = [a.name for a in assets]
